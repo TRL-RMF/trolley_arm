@@ -1,5 +1,5 @@
 #include "ros/ros.h"
-#include "arm_srv/arm.h"
+#include "trolley_arm/arm.h"
 #include "std_msgs/String.h"
 #include <std_msgs/Int32.h>
 #include <std_msgs/Int16MultiArray.h>
@@ -8,8 +8,8 @@
 int arm_position_val;
 int arm_moving_state_val;
 
-bool arm(arm_srv::arm::Request  &req,
-         arm_srv::arm::Response &res)
+bool arm(trolley_arm::arm::Request  &req,
+         trolley_arm::arm::Response &res)
 {
 //   ROS_INFO("rosservice request: %ld", (int)req.arm_request);
   if ((int)req.arm_request == 0){
@@ -25,7 +25,7 @@ bool arm(arm_srv::arm::Request  &req,
     ROS_INFO("Client request: Check Status");
   }
   else{
-    ROS_INFO("arm_srv server error: int not recognised");
+    ROS_INFO("trolley_arm server error: int not recognised");
   }
 
 //   ROS_INFO("Arm_position: %ld", (int)res.arm_position);
@@ -54,7 +54,7 @@ void arm_status_Callback(const std_msgs::Int16MultiArray & msg)
     ROS_INFO("Arm position: Unknown");
   }
   else{
-    ROS_INFO("arm_srv server callback error");
+    ROS_INFO("trolley_arm server callback error");
   }
 
   if (arm_moving_state_val == 1){
@@ -70,7 +70,7 @@ void arm_status_Callback(const std_msgs::Int16MultiArray & msg)
     ROS_INFO("Arm position: Unknown");
   }
   else{
-    ROS_INFO("arm_srv server callback error");
+    ROS_INFO("trolley_arm server callback error");
   }
 
 }

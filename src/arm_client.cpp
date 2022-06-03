@@ -1,5 +1,5 @@
 #include "ros/ros.h"
-#include "arm_srv/arm.h"
+#include "trolley_arm/arm.h"
 #include <cstdlib>
 #include <std_msgs/Int32.h>
 
@@ -14,12 +14,12 @@ int main(int argc, char **argv)
   }
 
   ros::NodeHandle n;
-  ros::ServiceClient client = n.serviceClient<arm_srv::arm>("arm");
+  ros::ServiceClient client = n.serviceClient<trolley_arm::arm>("arm");
   ros::Publisher down_pub = n.advertise<std_msgs::Int32>("arm_down", 1000); //1
   ros::Publisher up_pub = n.advertise<std_msgs::Int32>("arm_up", 1000); //2
   ros::Publisher brake_pub = n.advertise<std_msgs::Int32>("arm_brake", 1000); //0
 
-  arm_srv::arm srv;
+  trolley_arm::arm srv;
 
   srv.request.arm_request = atoll(argv[1]);
   
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
             ROS_INFO("Arm position: Unknown");
         }
         else{
-            ROS_INFO("arm_srv client response callback error");
+            ROS_INFO("trolley_arm client response callback error");
         }
         // Print arm moving state
         if (srv.response.arm_moving_state == 1){
@@ -78,12 +78,12 @@ int main(int argc, char **argv)
             ROS_INFO("Arm position: Unknown");
         }
         else{
-            ROS_INFO("arm_srv client response callback error");
+            ROS_INFO("trolley_arm client response callback error");
         }
         
     }
     else{
-        ROS_INFO("arm_srv client error: int not recognised");
+        ROS_INFO("trolley_arm client error: int not recognised");
     }
 
 
