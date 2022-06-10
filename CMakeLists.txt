@@ -200,9 +200,15 @@ add_dependencies(arm_client trolley_arm_gencpp)
 # )
 
 install(
-  DIRECTORY launch
+  DIRECTORY launch src
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
+
+install(
+  TARGETS arm_server arm_client
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 
 #############
 ## Testing ##
