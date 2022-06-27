@@ -1,5 +1,5 @@
 #include "ros/ros.h"
-#include "trolley_arm/arm.h"
+#include "arm_srv/arm.h"
 #include <cstdlib>
 #include <std_msgs/Int32.h>
 
@@ -14,12 +14,12 @@ int main(int argc, char **argv)
   }
 
   ros::NodeHandle n;
-  ros::ServiceClient client = n.serviceClient<trolley_arm::arm>("arm");
+  ros::ServiceClient client = n.serviceClient<arm_srv::arm>("arm");
   ros::Publisher down_pub = n.advertise<std_msgs::Int32>("arm_down", 1000); //1
   ros::Publisher up_pub = n.advertise<std_msgs::Int32>("arm_up", 1000); //2
   ros::Publisher brake_pub = n.advertise<std_msgs::Int32>("arm_brake", 1000); //0
 
-  trolley_arm::arm srv;
+  arm_srv::arm srv;
 
   srv.request.arm_request = atoll(argv[1]);
   
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
             ROS_INFO("Arm position: Unknown");
         }
         else{
-            ROS_INFO("trolley_arm client response callback error");
+            ROS_INFO("arm_srv client response callback error");
         }
         // Print arm moving state
         if (srv.response.arm_moving_state == 1){
@@ -78,12 +78,26 @@ int main(int argc, char **argv)
             ROS_INFO("Arm position: Unknown");
         }
         else{
-            ROS_INFO("trolley_arm client response callback error");
+            ROS_INFO("arm_srv client response callback error");
         }
+
+        if (srv.response.arm_docking_state == 1){
+            ROS_INFO("Docking State: Unsuccessful");
+        }
+        else if (srv.response.arm_docking_state == 0){
+            ROS_INFO("Dock Status: Docking successful");
+        }
+        else if (srv.response.arm_docking_state == 2){
+            ROS_INFO("Dock Status: Arm not lifted");
+        }
+        else{
+            ROS_INFO("arm_srv server callback error");
+        }
+        
         
     }
     else{
-        ROS_INFO("trolley_arm client error: int not recognised");
+        ROS_INFO("arm_srv client error: int not recognised");
     }
 
 

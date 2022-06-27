@@ -11,9 +11,16 @@
 #include <SPI.h>
 #include <Ethernet.h>
 #include <WiFi.h>
+#define SENSORPIN_L 7
+#define SENSORPIN_R 10
  
 // To use the TCP version of rosserial_arduino
 #define ROSSERIAL_ARDUINO_TCP
+
+
+int sensorStateL = 2;         // variable for reading the pushbutton status
+int sensorStateR = 2;         // variable for reading the pushbutton status
+int sensorState = 2;
 
 #include <ros.h>
 #include <std_msgs/String.h>
@@ -41,6 +48,7 @@ const int SensorDOWN = 6; // input pin for Photomicrosensor
 const int SensorUP = 4;
 int move_state = 0;
 int position_state = 0;
+int dock;
 int UP, DOWN; // a variable to read the encoder state
 float var;
 char result[32];
@@ -48,7 +56,7 @@ char log_msg[32];
 char state_char[8];
 uint16_t period = 1000;
 uint32_t last_time = 0;
-short int arm_status_value[2] = {};
+short int arm_status_value[3] = {};
 
 // Make a arm_moving_state publisher
 std_msgs::Int16MultiArray arm_status_msg;
@@ -74,6 +82,7 @@ void messageDOWN(const std_msgs::Int32 &msg) {
     move_state = 1; // moving down
     arm_status_value[0] = move_state;
     arm_status_value[1] = position_state;
+    arm_status_value[2] = sensorState;
     arm_status_msg.data = arm_status_value;
     arm_status.publish(&arm_status_msg);
     nh.spinOnce();
@@ -102,6 +111,7 @@ void messageUP(const std_msgs::Int32 &msg) {
     move_state = 2; // moving down
     arm_status_value[0] = move_state;
     arm_status_value[1] = position_state;
+    arm_status_value[2] = sensorState;
     arm_status_msg.data = arm_status_value;
     arm_status.publish(&arm_status_msg);
     nh.spinOnce();
@@ -122,6 +132,7 @@ void messageBR(const std_msgs::Int32 &msg) {
     state_char[0]= '\0';
     arm_status_value[0] = move_state;
     arm_status_value[1] = position_state;
+    arm_status_value[2] = sensorState;
     arm_status_msg.data = arm_status_value;
     arm_status.publish(&arm_status_msg);
     nh.spinOnce();
@@ -142,12 +153,24 @@ void check_sensors(){
   DOWN = digitalRead(SensorDOWN);
   if (UP == 1 && DOWN ==1){
     position_state = 1; // in between
+    sensorState = 2;
   }
   else if (UP == 1 && DOWN == 0){
     position_state = 0; // arm at bottom position
+    sensorState = 2;
   }
   else if (UP == 0 && DOWN == 1){
     position_state = 2; // arm at top position
+    sensorStateL = digitalRead(SENSORPIN_L); //1 if not broken (not docked), 0 if broken (docked)
+    sensorStateR = digitalRead(SENSORPIN_R); //1 if not broken (not docked), 0 if broken (docked)
+    if (sensorStateL == 0 && sensorStateR == 0){
+      sensorState = 0;
+      arm_status_value[2] = sensorState;
+    }
+    else{
+      sensorState = 1;
+      arm_status_value[2] = sensorState;
+    }
   }
   else{
     position_state = -1; //unknown position
@@ -187,7 +210,7 @@ void setup()
   nh.getHardware()->setConnection(server, serverPort);
   nh.initNode();
     // Start to be polite
-  arm_status_msg.data_length = 2;
+  arm_status_msg.data_length = 3;
   nh.advertise(arm_status);
   nh.subscribe(down);
   nh.subscribe(up);
@@ -211,8 +234,9 @@ void loop()
     check_sensors();
     arm_status_value[0] = move_state;
     arm_status_value[1] = position_state;
+    arm_status_value[2] = {};
     arm_status_msg.data = arm_status_value;
-    arm_status.publish(&arm_status_msg);
+    arm_status.publish(&arm_status_msg); // publishing to arm_server
     } else {
       Serial.println("Not Connected");
     }
